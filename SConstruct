@@ -23,6 +23,7 @@ vars.AddVariables(
     BoolVariable('MEMSTATS', 'Enable memory statistics.', False),
     BoolVariable('STACKTRACE', 'Enable stack trace.', False),
     BoolVariable('INSTRUMENT', 'Enable instrumentation.', False),
+    ('THREADS', 'Number of threads to use.', '15'),
 )
 
 env = project.create_environment(vars)
@@ -49,6 +50,7 @@ else:
     env.MergeFlags('-DNINSTRUMENT')
 
 env.MergeFlags('-DNLOGDEBUG -DNLOGTRIVIAL')
+env.MergeFlags('-DTHREADS=%d'%int(env['THREADS']))
 
 project.build(
     [],

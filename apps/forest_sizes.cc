@@ -9,7 +9,7 @@ namespace fs = boost::filesystem;
 ///
 /// Tunable parameters.
 ///
-const int num_threads = 15;
+const int num_threads = THREADS;
 const double update_every = 10; // seconds
 
 ///

@@ -19,7 +19,7 @@ extern unsigned file_offsets[];
 ///
 /// Tunable parameters.
 ///
-const unsigned num_threads = 10;
+const unsigned num_threads = THREADS;
 const float    update_every = 10.0;
 
 ///

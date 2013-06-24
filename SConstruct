@@ -27,6 +27,7 @@ vars.AddVariables(
 
 env = project.create_environment(vars)
 env.AppendUnique(CCFLAGS='-std=c++11')
+env['WITH_OPENMP'] = True
 if not env['MEMDEBUG']:
     env.MergeFlags('-DNMEMDEBUG')
 if not env['MEMOPS']:

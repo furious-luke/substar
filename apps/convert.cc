@@ -6,9 +6,9 @@
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
 #include <libhpc/libhpc.hh>
-#include "types.hh"
-#include "exporter.hh"
-#include "utils.hh"
+#include "substar/types.hh"
+#include "substar/exporter.hh"
+#include "substar/utils.hh"
 
 using namespace hpc;
 namespace fs = boost::filesystem;
@@ -19,7 +19,6 @@ extern unsigned file_offsets[];
 ///
 /// Tunable parameters.
 ///
-const unsigned num_threads = THREADS;
 const float    update_every = 10.0;
 
 ///
@@ -29,11 +28,6 @@ const float particle_mass = 1.35e8;
 const float newton_gravitation = 6.67428e-11;
 const float solar_mass = 1.98892e30;
 const float m_per_kpc = 3.08568025e19;
-
-///
-/// OpenMP shared variables.
-///
-unsigned file_offsets[num_threads];
 
 ///
 /// Custom mass comparison. 
@@ -662,7 +656,7 @@ main( int argc,
    unsigned long long halos_seen[num_threads];
    unsigned long long forests_seen[num_threads];
    unsigned long long total_halos_seen, total_forests_seen;
-   posix::time_type since_update = posix::timer();
+   time_type since_update = timer();
    std::fill( halos_seen, halos_seen + num_threads, 0 );
    std::fill( forests_seen, forests_seen + num_threads, 0 );
 
@@ -847,7 +841,7 @@ main( int argc,
 
 	 // Check if we need to update the user.
 #pragma omp critical( update )
-	 if( posix::seconds( posix::timer() - since_update ) > update_every )
+	 if( seconds( timer() - since_update ) > update_every )
 	 {
 	    // Sum the net results.
 	    total_halos_seen = halos_seen[0];
@@ -864,7 +858,7 @@ main( int argc,
 	    LOGILN( "Percentage complete: ", 100.0*(float)total_forests_seen/(float)num_forests );
 
 	    // Reset the update clock.
-	    since_update = posix::timer();
+	    since_update = timer();
 	 }
 
 	 LOGDLN( "Done.", setindent( -2 ) );

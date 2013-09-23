@@ -1,6 +1,7 @@
 # Define some arguments.
 args = (arguments()
         ('--prefix', default='/usr/local', help='Installation path.')
+        ('--threads', type=int, default=1, help='Number of threads to use.')
         ('--enable-debug', dest='debug', action='boolean', default=False, help='Enable/disable debugging mode.')
         ('--enable-instrument', dest='instrument', action='boolean', default=False, help='Enable/disable instrumentation.')
         ('--enable-stacktrace', dest='stacktrace', action='boolean', default=False, help='Enable/disable debugging stacktrace.')
@@ -17,7 +18,8 @@ glut = use('glut')
 cc_opts = (
     options(cxx11=True,
             pic=True,
-            define=[platform.os_name.upper()]) + 
+            openmp=True,
+            define=[platform.os_name.upper(), ('THREADS', args.threads)]) + 
     options(args.debug == True,
             prefix='build/debug',
             library_dirs=['build/debug/lib'],
@@ -63,7 +65,7 @@ lib_inst = files.feature('copy', None, targets.contains('install'), prefix=args.
 run_tests = files.feature('run', None, targets.contains('check'))
 
 # Setup flows.
-pkgs = hpc
+pkgs = hpc + (glut | identity)
 cc  = cc  + pkgs
 sl  = sl  + pkgs
 bin = bin + pkgs
@@ -80,4 +82,6 @@ shared_lib = rule(objs, sl & sl_inst, target=platform.make_shared_library('lib/s
 rule(static_lib, lib_inst, target_strip_dirs=2)
 
 # Build applications.
-rule(r'apps/.+\.cc$', bin, libraries=['substar'], single=False, suffix='')
+rule(r'apps/preprocess.cc$', bin, target='bin/preprocess', libraries=['substar'])
+rule(r'apps/forest_sizes.cc$', bin, target='bin/forest_sizes', libraries=['substar'])
+rule(r'apps/convert.cc$', bin, target='bin/convert', libraries=['substar'])

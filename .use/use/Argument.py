@@ -83,7 +83,7 @@ class Argument(object):
         return ArgumentCheck('add', self, op)
 
     def __str__(self):
-        return self.value()
+        return str(self.value())
 
     def contains(self, op):
         return ArgumentCheck('in', self, op)

@@ -40,7 +40,7 @@ class Option(object):
                     str_list.append(self.text.format(**opts))
                 else:
                     str_list.append(opt)
-        elif isinstance(value, (list, tuple)):
+        elif isinstance(value, list):
             for v in value:
                 self._append(str_list, opt, v)
         else:
@@ -48,16 +48,29 @@ class Option(object):
         return str_list
 
     def _append(self, str_list, opt, val):
-        if self.abspath:
-            if not os.path.isabs(val):
-                val = os.path.join(os.getcwd(), val)
-        if opt:
-            if not self.space:
-                str_list.append(opt + str(val))
-            else:
-                str_list.append(opt)
+        if isinstance(val, tuple):
+            self._assign(str_list, opt, val[0], val[1])
+        else:
+            if self.abspath:
+                if not os.path.isabs(val):
+                    val = os.path.join(os.getcwd(), val)
+            if opt:
+                if not self.space:
+                    str_list.append(opt + str(val))
+                else:
+                    str_list.append(opt)
+            if self.space:
+                str_list.append(str(val))
+
+    def _assign(self, str_list, opt, key, val):
+        space_bak = self.space
+        self.space = False
         if self.space:
-            str_list.append(str(val))
+            sub_opt = opt + ' ' + key + '='
+        else:
+            sub_opt = opt + key + '='
+        self._append(str_list, sub_opt, val)
+        self.space = space_bak
 
     def _opt(self, short):
         if short and self.short_opts:

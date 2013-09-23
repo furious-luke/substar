@@ -2,8 +2,8 @@
 
 using namespace hpc;
 
-extern const unsigned num_threads;
-extern unsigned file_offsets[];
+unsigned num_threads = THREADS;
+unsigned file_offsets[THREADS];
 
 const unsigned exporter::default_halos_per_file = 150000;
 

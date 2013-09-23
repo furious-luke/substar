@@ -1,10 +1,13 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <libhpc/libhpc.hh>
-#include "utils.hh"
+#include "substar/utils.hh"
 
 using namespace hpc;
 namespace fs = boost::filesystem;
+
+extern const unsigned num_threads;
+extern unsigned file_offsets[];
 
 ///
 ///

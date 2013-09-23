@@ -1,15 +1,17 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <libhpc/libhpc.hh>
-#include "utils.hh"
+#include "substar/utils.hh"
 
 using namespace hpc;
 namespace fs = boost::filesystem;
 
+extern const unsigned num_threads;
+extern unsigned file_offsets[];
+
 ///
 /// Tunable parameters.
 ///
-const int num_threads = THREADS;
 const double update_every = 10; // seconds
 
 ///
@@ -29,7 +31,7 @@ main( int argc,
       path = ".";
 
    // Use this to track when to update.
-   posix::time_type since_update = posix::timer();
+   time_type since_update = timer();
 
    // Reset the output file.
    {
@@ -165,12 +167,12 @@ main( int argc,
 
 	 // Have each thread dump information every so often.
 #pragma omp critical( update )
-	 if( posix::seconds( posix::timer() - since_update ) > update_every )
+	 if( seconds( timer() - since_update ) > update_every )
 	 {
 	    LOGILN( forests_done, " of ", num_forests, " completed." );
 
 	    // Reset the update clock.
-	    since_update = posix::timer();
+	    since_update = timer();
 	 }
       }
 

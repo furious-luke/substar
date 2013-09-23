@@ -1,0 +1,98 @@
+#!/usr/bin/env python
+
+##
+## The primary entry point.
+##
+
+import os, sys, signal, logging
+
+# Need to be sure we have the correct paths set.
+bin_dir = os.path.realpath(__file__)
+use_dir = os.path.join(os.path.dirname(bin_dir), '..', '..')
+sys.path.insert(0, use_dir)
+
+from use.Context import Context
+from use.Platform import platform
+from use.Argument import Argument
+from use.Node import Always
+
+# Setup debugging logging.
+try:
+    os.remove('config.log')
+except:
+    pass
+logging.basicConfig(level=logging.DEBUG, filename='config.log')
+
+# Where has this been launched from?
+launch_dir = os.getcwd()
+script = os.path.join(launch_dir, 'usescript.py')
+if not os.path.exists(script):
+    print('No "usescript.py" to execute.')
+    sys.exit(1)
+
+# Create the global context.
+ctx = Context()
+
+# Insert all the global methods and such I want
+# available to the user.
+identity = ctx.new_use('identity')
+identity.package.explicit = False
+files = ctx.new_use('files')
+files.package.explicit = False
+dummies = type('dummies', (object,), dict(always=Always))
+globals_dict = {
+
+    # Use shortcuts to insert 
+    'platform': platform,
+    'arguments': ctx.new_arguments,
+    'options': ctx.new_options,
+    'use': ctx.new_use,
+    'rule': ctx.new_rule,
+    'targets': Argument('targets', ctx),
+    'files': files,
+    'identity': identity,
+    'dummies': dummies,
+}
+
+# Try to execute the build script.
+locals_dict = {}
+# exec(open(script).read(), globals(), locals_dict)
+execfile(script, globals_dict, locals_dict)
+
+# Augment the trees.
+ctx.augment()
+
+# Handle arguments.
+ctx.parse_arguments()
+
+# Perform configuration.
+ctx.configure()
+
+# Locate source files.
+ctx.find_sources()
+
+# Expand into products.
+ctx.expand()
+
+# Scan for implicit dependencies.
+ctx.scan()
+
+# If there is a 'post_configure' callable in the locals
+# dictionary call it now.
+post_cfg = locals_dict.get('post_configure', None)
+if post_cfg and callable(post_cfg):
+    post_cfg(ctx)
+
+# Find targets to build.
+ctx.find_targets()
+
+# Before building, prepare a signal handler to catch interrupts.
+def terminate(signal, frame):
+    ctx.update_node_crcs()
+    ctx.save()
+    sys.stdout.write('\nInterrupted.\n')
+    sys.exit(0)
+signal.signal(signal.SIGINT, terminate)
+
+# Build targets.
+ctx.build()
